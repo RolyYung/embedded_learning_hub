@@ -1,4 +1,8 @@
-1. learning 是你的长期知识体系。
+# 摘要
+
+## !!! 每个文件夹下code是代码文件. md文件是笔记
+
+1. learning 是长期知识体系。
 2. mistakes 是错题库。
 3. projects 是练习项目、实验项目和项目记录。
 4. plans 当前学习安排。 
