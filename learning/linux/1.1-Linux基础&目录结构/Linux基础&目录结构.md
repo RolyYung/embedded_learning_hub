@@ -8,7 +8,7 @@
 
 ## 示意图
 
-![Linux 目录结构\.png](图片和附件/Linux%20目录结构.png)
+![Linux 目录结构\.png](Linux%20目录结构.png)
 
 ## 根目录\(/\)
 

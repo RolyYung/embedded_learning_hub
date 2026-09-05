@@ -6,7 +6,7 @@
 
 vim 进入文件后,默认就是命令模式\. 
 
-![image\.png](图片和附件/image.png)
+![image\.png](learning/linux/1.3-用户指令/图片和附件/image.png)
 
 ### 光标移动
 
