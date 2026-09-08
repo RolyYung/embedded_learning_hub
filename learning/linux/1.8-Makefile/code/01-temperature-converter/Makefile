@@ -3,10 +3,10 @@ foo = c
 TARGET = temperature
 
 $(TARGET): main.o
-	$(CC) $< -o $(TARGET)
-main.o: 
-	$(CC) -${foo} main.c -o $@
+	$(CC) $< -o $@
+main.o: main.c 
+	$(CC) -${foo} $< -o $@
 .PHONY: clean
 
 clean: 
-	rm -f *.o ${TARGET}
+	rm -f *.o $(TARGET)
