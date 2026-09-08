@@ -1,26 +1,24 @@
 CC = gcc
-foo = c
+compile = c
+output = o
+warn = Wall
+std = std=c11
 TARGET = temperature
 
 $(TARGET): main.o
-	$(CC) $< -o $@ -Wall -std=c11
+	$(CC) $< -$(output) $@ -$(warn) -$(std)
 main.o: main.c 
-	$(CC) -${foo} $< -o $@ -Wall -std=c11
+	$(CC) -$(compile) $< -$(output) $@ -$(warn) -$(std)
 
-.PHONY: run
+.PHONY: run help clean
 
-run: 
+run: $(TARGET) 
 	./${TARGET} c2f 100
-
-.PHONY: help
 
 help: 
 	@echo "usage run: make run"
 	@echo "usage clean: make clean"
 	@echo "usage default: make"
-
-
-.PHONY: clean
 
 clean: 
 	rm -f *.o $(TARGET)
