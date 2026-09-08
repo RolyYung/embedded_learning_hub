@@ -1,19 +1,16 @@
 CC = gcc
-compile = c
-output = o
-warn = Wall
-std = std=c11
+CFLAGS = -Wall -std=c11
 TARGET = temperature
 
 $(TARGET): main.o
-	$(CC) $< -$(output) $@ -$(warn) -$(std)
+	$(CC) $< -o $@ $(CFLAGS)
 main.o: main.c 
-	$(CC) -$(compile) $< -$(output) $@ -$(warn) -$(std)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 .PHONY: run help clean
 
 run: $(TARGET) 
-	./${TARGET} c2f 100
+	./$< c2f 100
 
 help: 
 	@echo "usage run: make run"
