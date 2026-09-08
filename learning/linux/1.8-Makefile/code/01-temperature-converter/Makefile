@@ -7,4 +7,6 @@ $(TARGET): main.o
 main.o: 
 	$(CC) -${foo} main.c -o $@
 .PHONY: clean
-	rm *.o ${TARGET}
+
+clean: 
+	rm -f *.o ${TARGET}
