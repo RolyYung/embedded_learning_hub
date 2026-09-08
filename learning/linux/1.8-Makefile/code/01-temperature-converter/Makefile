@@ -5,7 +5,7 @@ TARGET = temperature
 $(TARGET): main.o
 	$(CC) $< -o $@ $(CFLAGS)
 main.o: main.c 
-	$(CC) -c $< -o $@ $(CFLAGS)
+	$(CC) -c $< -o $@
 
 .PHONY: run help clean
 
