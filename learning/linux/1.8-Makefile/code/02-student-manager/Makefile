@@ -6,7 +6,7 @@ OBJS = main.o student.o report.o
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $< -o $@ $(INCLUDE)
+	$(CC) $^ -o $@ $(INCLUDE)
 
 main.o: main.c include/report.h include/student.h
 	$(CC) -c $< -o $@ $(INCLUDE)
