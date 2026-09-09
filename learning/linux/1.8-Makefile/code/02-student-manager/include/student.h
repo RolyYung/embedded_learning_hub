@@ -1,6 +1,7 @@
 #ifndef STUDENT_H
 #define STUDENT_H
 
+// only modify student.h
 #include <stddef.h>
 
 typedef struct {

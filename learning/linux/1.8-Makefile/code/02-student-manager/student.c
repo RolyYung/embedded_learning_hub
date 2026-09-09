@@ -1,5 +1,6 @@
 #include "student.h"
 
+// only modify student.c
 double student_average(const Student students[], size_t count)
 {
     size_t i;
