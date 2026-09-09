@@ -6,8 +6,8 @@ OBJS := $(patsubst src/%.c, build/%.o, $(SRCS))
 HEADERS := $(wildcard include/*.h)
 TARGET := build/sensor_processor
 
-$(TARGET): $(OBJS) $(HEADERS) build/
-	$(CC) $(OBJS) -o $(TARGET)
+$(TARGET): $(OBJS) 
+	$(CC) $^ -o $(TARGET)
 build/%.o:  src/%.c ${HEADERS} build/
 	$(CC) $(CFLAGS) -c $< -o $@ -I include/
 build/: 
@@ -15,7 +15,7 @@ build/:
 
 .PHONY: clean
 
-clean: build/
-	rm -rf $<
+clean: 
+	rm -rf build/
 
 
