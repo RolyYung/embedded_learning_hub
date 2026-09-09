@@ -1,23 +1,24 @@
 CC = gcc
 INCLUDE = -I ./include/
 TARGET = student_manager
+OBJS = main.o student.o report.o
 
 all: $(TARGET)
 
-$(TARGET): main.o student.o report.o
-	gcc $^ -o $@ $(INCLUDE)
+$(TARGET): $(OBJS)
+	$(CC) $< -o $@ $(INCLUDE)
 
 main.o: main.c include/report.h include/student.h
-	gcc -c $< -o $@ $(INCLUDE)
+	$(CC) -c $< -o $@ $(INCLUDE)
 student.o: student.c include/student.h
-	gcc -c $< -o $@ $(INCLUDE)
+	$(CC) -c $< -o $@ $(INCLUDE)
 report.o: report.c include/report.h include/student.h
-	gcc -c $< -o $@ $(INCLUDE)
+	$(CC) -c $< -o $@ $(INCLUDE)
 
 .PHONY: clean run all
 
 clean: 
-	rm -f *.o $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
-run: 
-	./$(TARGET)
+run: $(TARGET) 
+	./$<
