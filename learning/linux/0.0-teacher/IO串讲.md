@@ -69,3 +69,14 @@ IO章节主要是一些概念的记忆, 学会使用别人写好的函数
 | `__func__` | 当前调用的函数名 |         |
 
 ### 在哪里可以看到
+***
+https://gcc.gnu.org/onlinedocs/cpp/Predefined-Macros.html
+
+# 日志信息登记
+***
+c语言中一般是氛围四个
+1. DEBUG: 调试信息
+2. INFO: 状态改变, 打印关键信息
+3. WARN: 不影响程序运行的异常
+4. ERROR: 影响程序运行的异常
+

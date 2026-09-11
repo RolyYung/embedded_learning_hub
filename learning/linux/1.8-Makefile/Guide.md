@@ -8,3 +8,5 @@ Makefile被称为"工程管理器"
 Makefile不是一门编程语言, 我认为是一种配置规则.
 例如vscode里的task.json
 
+# 为什么要学习Makefile
+***
