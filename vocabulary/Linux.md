@@ -10,3 +10,10 @@
 # `vector`
 在C语言中指的是数组. 
 在数学领域指的是向量. 这要区分开来.
+
+# `detach`
+***
+attach: 附上 连接 依附
+这是attach的反义词
+也就是分离的意思
+常用场景: `pthread_detach` 函数 `PTHREAD_CREATE_DETACH`宏
