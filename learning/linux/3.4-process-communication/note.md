@@ -67,6 +67,119 @@ shell 命令也有`mkfifo`: `man 1 mkfifo`
 2. 读端打开:
 	1. 写端操作时, 读端关闭, 会发送管道破裂信号`SIGPIPE`
 
+## 信号
+***
+进程可以给进程发信号
+内核也可以给进程发信号
+信号是基于Linux内核实现的.
+
+### `kill`shell命令
+终端上查看信号的命令: `kill -l`
+`kill` 命令默认是给进程发`终止`信号的, 随着需要发送的信号越来越多, 就逐渐引申出"给进程发信号"的功能了.
+
+### `signal`函数
+***
+```C
+typedef void (*sighandler_t)(int);
+sighandler_t signal(int signum, sighandler_t handler);
+```
+参数:
+`signum`: 信号编码. 用于发出什么信号
+`handler`: 处理函数, 接收到具体信号后, 该怎么处理
+
+返回值:
+成功: 返回传入的函数指针
+失败: 返回`SIG_ERR`, 重置错误码
+一旦定义了`signal`, 父子进程都会继承.
+`SIGSTOP` `SIGKILL` 不能被忽略(`SIG_IGN`)
+
+### `raise`函数
+***
+自己给自己发送信号
+`int raise(int sig)`
+比较鸡肋, 如果想实现什么功能, 自己调用就行.
+
+### `kill` 函数
+***
+```C
+int kill(pid_t pid, int sig);
+```
+参数:
+`pid`: 进程id
+`sig`: 信号值.
+
+关于`pid`: 
+`>0`: 就是指定`pid`去kill
+`0`: 同进程组的进程发送信号
+`-1`: 只要当前调用者有权限的都kill. (这个几乎用不到.)
+`<-1`: 把负数先不看, 找到对应绝对值的`pid`组, kill掉.
+
+返回值:
+成功: 0
+失败: -1, 重置错误码
+
+## 消息队列
+***
+### `System V IPC`
+> `System V` 是Unix世界的一个重要的分支版本(另一只是BSD-伯克利软件分支).
+> `IPC`-`inter-process communication` 进程间通信
+> Linux内核实现这一机制, 来进行进程间通信.
+> 之前的三个是Unix原本就提出的通信方式, 而现在补充的都是其它分支提供的通信方式, 已经被Linux实现
+
+`IPC`:**内核为了帮助进程通信，而创建并维护的一份通信资源。**
+相关shell 命令:
+`ipcs`- `ipc show` 展示`IPC`信息
+`ipcs -q`- 消息队列 `queue`
+`ipcs -m`- 共享内存 `memory`
+`ipcs -s`- 信号量级 `signal`
+`ipcs -a` - 全部 `all` 默认的
+
+`ipcrm` - 删除命令 `remove`
+`ipcrm -q 5` - 删除`msqid`为5的消息队列
+`ipcrm -m 10` - 删除`shmid`为10的共享内存
+`ipcrm -s 15` - 删除`semid`为15的信号量集
+
+### `ftok`函数
+***
+怎么理解这个函数命名呢:
+> `file to key`, 你传入一个文件, 转成对应的`IPC key`
+
+```C
+#include <sys/ipc.h>
+key_t ftok(const char *pathname, int proj_id);
+```
+参数:
+`pathname`: 文件路径, 尽量一样, 也可以使用硬链接文件. 生成的key是同`inode` `dev`等信息来生成.
+`proj_id`: 取低8位(0~255),来确定`file` 用途.
+
+返回值:
+key_t: 
+成功: 返回对应的key值
+失败: 返回-1
+
+**为什么需要`ftok`这个函数**
+> 这个函数最重要的作用是**生成了一个key值**, 方便后面消息队列, 共享内存去生成对应的`IPC对象` 
+> 不同进程的通信需要一个锚点/介质去传递数据, 而文件系统中一个特定的文件, 就可以生成一个唯一的key(几乎, 但不保证一定是唯一)
+
+
+
+### 消息队列
+***
+`msg`: message
+![[file-20260924163840159.png]]
+
+#### `msgget`
+***
+```C
+int msgget(key_t key, int msgflg);
+```
+参数:
+`key`: 文件key值
+`msgflg`: 消息标志. flag-**用一个值表示某个行为、状态或选项是否开启。** 像海航一样, 有自己的旗语
+
+返回值;
+成功: 返回对应的消息队列id
+失败: -1, 重置错误码.
 
 
 
