@@ -100,5 +100,70 @@ Linux 常见的进程状态字符有 `R、S、D、T、Z` 等。
 
 ### 15分题
 1. 线程同步实现方法及代码编写，两个线程交替打印AB。（应用层常考）  
-2. 死锁是如何产生的？怎么避免死锁的产生  
-3. 简述线程池的概念与作用
+```C
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+sem_t sem_a;
+sem_t sem_b;
+
+void *thread_a(void *arg)
+{
+    for (int i = 0; i < 10; i++) {
+        sem_wait(&sem_a);
+
+        printf("A\n");
+
+        sem_post(&sem_b);
+    }
+
+    return NULL;
+}
+
+void *thread_b(void *arg)
+{
+    for (int i = 0; i < 10; i++) {
+        sem_wait(&sem_b);
+
+        printf("B\n");
+
+        sem_post(&sem_a);
+    }
+
+    return NULL;
+}
+
+int main(void)
+{
+    pthread_t tid_a, tid_b;
+
+    sem_init(&sem_a, 0, 1);
+    sem_init(&sem_b, 0, 0);
+
+    pthread_create(&tid_a, NULL, thread_a, NULL);
+    pthread_create(&tid_b, NULL, thread_b, NULL);
+
+    pthread_join(tid_a, NULL);
+    pthread_join(tid_b, NULL);
+
+    sem_destroy(&sem_a);
+    sem_destroy(&sem_b);
+
+    return 0;
+}
+```
+1. 死锁是如何产生的？怎么避免死锁的产生  
+```
+死锁是多个线程或进程竞争资源时，相互持有对方需要的资源，同时又等待对方释放资源，从而导致所有相关执行流都无法继续执行的状态。
+
+死锁通常涉及四个必要条件：互斥、占有并等待、不可剥夺、循环等待。
+
+避免死锁的核心思路是破坏这些必要条件。例如多把锁统一按照固定顺序获取，避免形成循环等待；尽量减少同时持有多把锁；获取资源失败时适当释放已经持有的资源；必要时可以使用 trylock 等机制避免无限等待。
+```
+1. 简述线程池的概念与作用
+```
+**线程池是什么：** 线程池是一种线程复用技术。程序提前创建一定数量的工作线程，任务到来后放入任务队列，由空闲线程从任务队列中获取任务并执行。任务执行完成后线程不会立即退出，而是继续等待并处理后续任务。
+
+**作用：** 第一，减少频繁创建和销毁线程带来的开销；第二，通过限制工作线程数量控制程序的并发度，避免短时间创建大量线程导致资源消耗和频繁的线程调度；第三，可以配合任务队列统一管理待处理任务。
+```

@@ -69,5 +69,43 @@ socket还没学, 暂时不用管.后面学习网络了再去深究
 
 ### 15分题
 1. 线程同步实现方法及代码编写，两个线程交替打印AB。（应用层常考）  
-2. 死锁是如何产生的？怎么避免死锁的产生  
-3. 简述线程池的概念与作用
+```C
+// 头文件引入没有记
+sem_t sem_1, sem_2;
+
+void * thread_1(void * arg){
+	for(int i =0;i<10;i++){
+		sem_wait(&sem_1);
+		printf("A \n");
+		sem_post(&sem_2);
+	}
+	return NULL;
+}
+
+void * thread_2(void * arg){
+	for(int i =0;i<10;i++){
+		sem_wait(&sem_2);
+		printf("B \n");
+		sem_post(&sem_1);
+	}
+	return NULL;
+}
+
+int main(int argc, const char * argv[]){
+	sem_init(&sem_1, 0 ,1);
+	sem_init(&sem_2, 0 ,0);
+	
+	pthread_t tid_1, tid_2;
+	tid_1 = pthread_create(&tid_1, NULL, thread_1, NULL);
+	tid_2 = pthread_create(&tid_2, NULL, thread_2, NULL);
+	
+	pthread_join(tid_1, NULL);
+	pthread_join(tid_2, NULL);
+	
+	
+	return 0;
+}
+```
+1. 死锁是如何产生的？怎么避免死锁的产生  
+
+2. 简述线程池的概念与作用
