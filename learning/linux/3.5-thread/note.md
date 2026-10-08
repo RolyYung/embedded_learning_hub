@@ -35,3 +35,4 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 join英文意思是`加入,参加`的意思.
 在线程中这个函数的意思是等待子线程和主线程`汇合`
 是一种阻塞等待.
+
