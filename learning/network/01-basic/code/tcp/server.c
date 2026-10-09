@@ -65,11 +65,35 @@ int main(int argc, const char *argv[])
 
     printf("client [%s:%d] connect the server!!! \n", inet_ntoa(clientInfo.sin_addr), ntohs(clientInfo.sin_port));
 
-    // handler client communication
+    // handle client communication
     while (1)
     {
       char buf[128] = {0};
-      int nbytes = recv(connect_fd, buf, sizeof(buf), 0);
+      ssize_t nbytes = recv(connect_fd, buf, sizeof(buf), 0);
+
+      if (nbytes == -1)
+      {
+        perror("recv fail:");
+        close(connect_fd);
+        return -1;
+      }
+
+      if (nbytes == 0)
+      {
+        printf("the client disconnected \n");
+      }
+
+      printf("client{%s:%d}send data: %s \n", inet_ntoa(clientInfo.sin_addr), ntohs(clientInfo.sin_port), buf);
+
+      // echo the data
+      int nbytes_send = send(connect_fd, buf, sizeof(buf), 0);
+
+      if (nbytes_send == -1)
+      {
+        perror("send fail: ");
+        close(connect_fd);
+        return -1;
+      }
     }
   }
   return 0;
