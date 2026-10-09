@@ -81,6 +81,8 @@ int main(int argc, const char *argv[])
       if (nbytes == 0)
       {
         printf("the client disconnected \n");
+        close(connect_fd);
+        break;
       }
 
       printf("client{%s:%d}send data: %s \n", inet_ntoa(clientInfo.sin_addr), ntohs(clientInfo.sin_port), buf);
