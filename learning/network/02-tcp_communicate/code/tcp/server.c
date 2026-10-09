@@ -25,14 +25,14 @@ int main(int argc, const char *argv[])
 
   serverInfo.sin_family = AF_INET;
   serverInfo.sin_port = htons(PORT);
-  serverInfo.sin_addr.s_addr = inet_addr("192.168.3.15");
+  serverInfo.sin_addr.s_addr = inet_addr("127.0.0.1");
 
   // bind (socket & addr)
   int ret_bind = bind(listen_fd, (struct sockaddr *)&serverInfo, sizeof(serverInfo));
 
   if (ret_bind == -1)
   {
-    perror("bind fail:");
+    perror("bind fail");
     close(listen_fd);
     return -1;
   }
