@@ -20,7 +20,7 @@ int main(int argc, const char *argv[])
   struct sockaddr_in serverInfo = {0};
 
   serverInfo.sin_family = AF_INET;
-  serverInfo.sin_addr.s_addr = inet_addr("127.0.0.1");
+  serverInfo.sin_addr.s_addr = inet_addr("192.168.3.13");
   serverInfo.sin_port = htons(8888);
 
   // connect server
