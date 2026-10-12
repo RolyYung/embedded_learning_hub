@@ -102,6 +102,7 @@ int main()
       close(acceptfd);
     }
   }
+  close(sockfd);
 
   return 0;
 }
