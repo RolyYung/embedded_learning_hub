@@ -34,3 +34,16 @@ int
 `timeout`: 超时时间. 单位是毫秒.
 
 
+# 多进程并发服务器编码思路整理
+***
+首先创建一个`socket`(以TCP协议)
+`socket(AF_INET, SOCK_STREAM, 0)`
+设置服务器信息`strcut sockaddr_in`
+绑定socket 和 服务器信息`bind()`
+监听`listen()`
+循环接收客户端请求`accept`
+处理接收数据`recv`
+服务器回显`send`
+完成关闭`acceptfd`
+
+
