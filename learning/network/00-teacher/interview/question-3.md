@@ -259,3 +259,22 @@ ERROR-code
 block 和 ack互相配合保证丢包问题不存在.
 DATA发送时, 设置定时器, 保证超时问题.
 ```
+
+
+
+```
+socket()
+bind()
+listen()
+
+epoll_create1();
+epoll_ctl(epfd, EPOLL_CTL_ADD, listenfd, &ev);
+epoll_wait(epfd, events, max_events, -1);
+
+epoll_ctl(add)
+close(connfd);
+epoll_ctl(del)
+
+close(epfd);
+close(listenfd);
+```
