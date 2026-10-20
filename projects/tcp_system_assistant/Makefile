@@ -2,6 +2,8 @@ CC = gcc
 CPPFLAGS = -I src/include
 CFLAGS = -Wall -Wextra -Wpedantic -g
 
+BUILD = build
+
 .PHONY: all clean
 
 all: build/server build/client
