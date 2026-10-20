@@ -8,11 +8,18 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/epoll.h>
+#include "message.h"
 
 #define ERR_VAL -1
 #define PORT 8888
 #define SERVER_IP "192.168.44.100"
 #define MAX_EVENTS 1024
+
+typedef struct {
+    int fd;
+    struct sockaddr_in addr;
+    message_recv_state state;
+}connection;
 
 
 int main(){
@@ -49,7 +56,14 @@ int main(){
     }
 
     struct epoll_event ev;
-    ev.data.fd = listenfd;
+    connection *listen_peer = (connection*)malloc(sizeof(connection));
+    if(listen_peer == NULL){
+        close(listenfd);
+        exit(1);
+    }
+    memset(listen_peer, 0, sizeof(connection));
+    listen_peer->fd = listenfd;
+    ev.data.ptr = listen_peer;
     ev.events = EPOLLIN;
     int ret = epoll_ctl(epfd, EPOLL_CTL_ADD, listenfd, &ev);
     if(ret == -1){
@@ -70,8 +84,8 @@ int main(){
             exit(1);
         }
         for(int i=0;i<ready_num;i++){
-            int fd = e_events[i].data.fd;
-            if(fd == listenfd){
+            connection * peer = e_events[i].data.ptr;
+            if(peer->fd == listenfd){
                 // 监听fd有新的读取任务了. 也就是有新的连接请求.
                 // accept接收新的连接, 并将连接加入到epoll池中.
                 struct sockaddr_in client_addr;
@@ -88,17 +102,28 @@ int main(){
                 
 
                 // 加入连接池.
-                ev.data.fd = acceptfd;
+                connection* peer = (connection*)malloc(sizeof(connection));
+                if(peer == NULL){
+                    close(acceptfd);
+                    continue;
+                }
+                memset(peer, 0, sizeof(connection));
+                peer->fd = acceptfd;
+                peer->addr = client_addr;
+
+                ev.data.ptr = peer;
                 ev.events = EPOLLIN;
                 ret = epoll_ctl(epfd, EPOLL_CTL_ADD, acceptfd, &ev);
                 if(ret == -1){
                     perror("epoll_ctl");
+                    free(peer);
                     close(acceptfd);
                     continue;
                 }
 
             }
             else {
+                int fd = peer->fd;
                 // 连接fd, 有新的读取数据, 也就是有客户端发送消息来了.
                 char buf[BUFSIZ] = {0};
                 ssize_t nbytes = 0;
@@ -113,6 +138,7 @@ int main(){
                         perror("epoll ctl - del fd");
                     }
                     close(fd);
+                    free(peer);
                     continue;
                 }else if(nbytes < 0){
                     perror("recv fail");
@@ -122,8 +148,10 @@ int main(){
                         perror("epoll ctl - del fd");
                     }
                     close(fd);
+                    free(peer);
                     continue;
                 }
+                
                 buf[nbytes] = '\0';
                 printf("recv data msg: %s \n", buf);
                 char buf_2[BUFSIZ + 13] = {0};
@@ -137,12 +165,14 @@ int main(){
                         perror("epoll ctl - del fd");
                     }
                     close(fd);
+                    free(peer);
                     continue;
                 }
             }
         }
     }
     close(epfd);
+    free(listen_peer);
     close(listenfd);
     
     return 0;

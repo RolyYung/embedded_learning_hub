@@ -8,6 +8,7 @@
 #include <string.h>
 #include <signal.h>
 #include <sys/epoll.h>
+#include "message.h"
 
 #define PORT 8888
 #define SERVERIP "192.168.44.100"
@@ -74,17 +75,19 @@ int main(){
                     close(sockfd);
                     exit(1);
                 }
+                message_header header;
+                header.type = 1;
+                header.body_len = strlen(buf);
 
-                ssize_t nbytes = send(sockfd, buf, strlen(buf), 0);
+
+                ssize_t nbytes = send_msg(sockfd, header, buf);
                 if(-1 == nbytes){
                     perror("send fail");
                     close(epfd);
                     close(sockfd);
                     exit(1);
                 }
-                if((size_t)nbytes == strlen(buf)){
-                    printf("send success \n");
-                }
+                printf("send success \n");
             }else if(fd == sockfd){
                 memset(&buf, 0, sizeof(buf));
                 ssize_t recv_nbytes = recv(sockfd, buf, BUFSIZ - 1 , 0);
