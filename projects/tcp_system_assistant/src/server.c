@@ -124,11 +124,48 @@ int main(){
             }
             else {
                 int fd = peer->fd;
+
+                message_recv_state* state = &peer->state;
+                if(state->header_received == HEADER_SIZE){
+                    uint32_t body_len = state->header.body_len;
+                    
+                    if(body_len == 0){
+                        printf("recv done \n");
+                        state->body_received = 0;
+                        state->header_received = 0;
+                        continue;
+                    }
+                    ssize_t n_body = recv(fd, state->body_buf + state->body_received, body_len-state->body_received, 0);
+                    if(n_body <= 0){
+                        if(n_body == 0){
+                            printf("client closed \n");
+                        }else{
+                            perror("recv error");
+                        }
+                        // 删除epoll池
+                        ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
+                        if(ret == -1){
+                            perror("epoll ctl - del fd");
+                        }
+                        close(fd);
+                        free(peer);
+                        continue;
+                    }
+                    state->body_received += n_body;
+                    if(state->body_received == body_len){
+                        state->body_buf[state->body_received] = '\0';
+                        printf("recv done: %s \n", state->body_buf);
+                        state->body_received = 0;
+                        state->header_received = 0;
+                        
+                    }
+                    continue;
+                }
                 // 连接fd, 有新的读取数据, 也就是有客户端发送消息来了.
-                char buf[BUFSIZ] = {0};
+                
                 ssize_t nbytes = 0;
                 
-                nbytes = recv(fd, buf, BUFSIZ-1, 0);
+                nbytes = recv(fd, state->header_buf + state->header_received, HEADER_SIZE - state->header_received, 0);
                 if(nbytes == 0){
                     // 断开连接
                     printf("client closed \n");
@@ -152,22 +189,39 @@ int main(){
                     continue;
                 }
                 
-                buf[nbytes] = '\0';
-                printf("recv data msg: %s \n", buf);
-                char buf_2[BUFSIZ + 13] = {0};
-                strcpy(buf_2, buf);
-                strcat(buf_2, "--from server");
-                if(-1 == send(fd, buf_2, strlen(buf_2), 0)){
-                    perror("send fail");
-                     // 删除epoll池
-                    ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
-                    if(ret == -1){
-                        perror("epoll ctl - del fd");
-                    }
-                    close(fd);
-                    free(peer);
+                state->header_received += nbytes;
+                if(state->header_received < HEADER_SIZE){
                     continue;
                 }
+
+                // 取出消息类型; 消息长度
+                uint32_t net_type;
+                uint32_t net_len;
+
+                memcpy(&net_type, state->header_buf, 4);
+                memcpy(&net_len, state->header_buf+4, 4);
+
+                state->header.type = ntohl(net_type);
+                state->header.body_len = ntohl(net_len);
+
+                printf("message type: %d, message length: %d \n", state->header.type, state->header.body_len);
+
+                // buf[nbytes] = '\0';
+                // printf("recv data msg: %s \n", buf);
+                // char buf_2[BUFSIZ + 13] = {0};
+                // strcpy(buf_2, buf);
+                // strcat(buf_2, "--from server");
+                // if(-1 == send(fd, buf_2, strlen(buf_2), 0)){
+                //     perror("send fail");
+                //      // 删除epoll池
+                //     ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
+                //     if(ret == -1){
+                //         perror("epoll ctl - del fd");
+                //     }
+                //     close(fd);
+                //     free(peer);
+                //     continue;
+                // }
             }
         }
     }
