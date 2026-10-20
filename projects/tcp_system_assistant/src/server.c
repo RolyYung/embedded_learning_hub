@@ -124,17 +124,9 @@ int main(){
             }
             else {
                 int fd = peer->fd;
-
                 message_recv_state* state = &peer->state;
                 if(state->header_received == HEADER_SIZE){
                     uint32_t body_len = state->header.body_len;
-                    
-                    if(body_len == 0){
-                        printf("recv done \n");
-                        state->body_received = 0;
-                        state->header_received = 0;
-                        continue;
-                    }
                     ssize_t n_body = recv(fd, state->body_buf + state->body_received, body_len-state->body_received, 0);
                     if(n_body <= 0){
                         if(n_body == 0){
@@ -155,6 +147,8 @@ int main(){
                     if(state->body_received == body_len){
                         state->body_buf[state->body_received] = '\0';
                         printf("recv done: %s \n", state->body_buf);
+                        send_msg(fd, state->header, state->body_buf);
+
                         state->body_received = 0;
                         state->header_received = 0;
                         
@@ -203,6 +197,13 @@ int main(){
 
                 state->header.type = ntohl(net_type);
                 state->header.body_len = ntohl(net_len);
+
+                if(net_len == 0){
+                    printf("recv done: empty message\n");
+                    state->header_received = 0;
+                    state->body_received = 0;
+                    continue;
+                }
 
                 printf("message type: %d, message length: %d \n", state->header.type, state->header.body_len);
 
