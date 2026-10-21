@@ -151,6 +151,7 @@ int main(){
                     printf("message type: %d, message length: %d \n", state->header.type, state->header.body_len);
                     printf("message content: %s \n", state->body_buf);
                     printf("====client[%s:%d], send message==== \n", ip, ntohs(peer->addr.sin_port));
+                    // 重置接收结构体.
                     memset(state, 0 ,sizeof(message_recv_state));
                 }
             }
