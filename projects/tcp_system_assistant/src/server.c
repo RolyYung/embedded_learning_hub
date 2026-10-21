@@ -19,12 +19,16 @@
 
 
 int main(){
+    // ----初始化
     signal(SIGPIPE, SIG_IGN);
     int listenfd = socket(AF_INET, SOCK_STREAM, 0);
     if(listenfd == ERR_VAL){
         perror("socket fail");
         return -1;
     }
+
+    int opt = 1;
+    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
@@ -68,6 +72,7 @@ int main(){
         close(epfd);
         exit(1);
     }
+    // ----初始化结束.
 
     struct epoll_event e_events[MAX_EVENTS];
     while (1)
@@ -82,6 +87,7 @@ int main(){
         for(int i=0;i<ready_num;i++){
             connection * peer = e_events[i].data.ptr;
             if(peer->fd == listenfd){
+                // ----- 接受连接
                 // 监听fd有新的读取任务了. 也就是有新的连接请求.
                 // accept接收新的连接, 并将连接加入到epoll池中.
                 struct sockaddr_in client_addr;
@@ -116,12 +122,15 @@ int main(){
                     close(acceptfd);
                     continue;
                 }
+                // -----接受连接完成 加入epoll等待池
 
             }
             else {
                 int fd = peer->fd;
+                // -----接收数据
                 ssize_t nbytes = recv_msg(peer);
                 if(nbytes < 0){
+                    // -----接收数据报错
                     // 删除epoll池
                     ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
                     if(ret == -1){
@@ -132,9 +141,16 @@ int main(){
                     continue;
                 }
                 else if(nbytes > 0){
+                    // ----接收数据完成.
                     message_recv_state * state = &(peer->state);
                     send_msg(fd, state->header, state->body_buf);
+
+                    char ip[20];
+                    inet_ntop(AF_INET, &(peer->addr.sin_addr), ip, sizeof(peer->addr.sin_addr));
+                    printf("====client[%s:%d], send message==== \n\n", ip, ntohs(peer->addr.sin_port));
                     printf("message type: %d, message length: %d \n", state->header.type, state->header.body_len);
+                    printf("message content: %s \n", state->body_buf);
+                    printf("====client[%s:%d], send message==== \n", ip, ntohs(peer->addr.sin_port));
                     memset(state, 0 ,sizeof(message_recv_state));
                 }
             }
