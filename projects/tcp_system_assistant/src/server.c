@@ -15,11 +15,7 @@
 #define SERVER_IP "192.168.44.100"
 #define MAX_EVENTS 1024
 
-typedef struct {
-    int fd;
-    struct sockaddr_in addr;
-    message_recv_state state;
-}connection;
+
 
 
 int main(){

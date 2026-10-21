@@ -42,7 +42,17 @@ int main(){
 
     
     struct epoll_event e_events[2];
-    e_events[0].data.fd = STDIN_FILENO;
+
+    connection * in_peer = (connection *)malloc(sizeof(connection));
+    if(in_peer == NULL){
+        printf("in_peer malloc fail \n");
+        close(sockfd);
+        close(epfd);
+        exit(1);
+    }
+    memset(in_peer, 0, sizeof(connection));
+    in_peer->fd = STDIN_FILENO;
+    e_events[0].data.ptr = in_peer;
     e_events[0].events = EPOLLIN;
     if(-1 == epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &e_events[0])){
         perror("epoll_ctl add");
@@ -50,7 +60,19 @@ int main(){
         close(epfd);
         exit(1);
     }
-    e_events[1].data.fd = sockfd;
+
+    connection * peer = (connection *)malloc(sizeof(connection));
+    if(peer == NULL){
+        printf("malloc fail \n");
+        close(sockfd);
+        close(epfd);
+        exit(1);
+    }
+
+    memset(peer, 0, sizeof(connection));
+    peer->fd = sockfd;
+
+    e_events[1].data.ptr = peer;
     e_events[1].events = EPOLLIN;
     if(-1 == epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &e_events[1])){
         perror("epoll_ctl add");
@@ -68,7 +90,8 @@ int main(){
         
         for (int i = 0; i < ready_num; i++)
         {
-            int fd = e_events[i].data.fd;
+            connection *ptr = e_events[i].data.ptr;
+            int fd = ptr->fd;
             if(fd == STDIN_FILENO){
                 if(NULL == fgets(buf, BUFSIZ, stdin)){
                     close(epfd);
@@ -89,22 +112,61 @@ int main(){
                 }
                 printf("send success \n");
             }else if(fd == sockfd){
-                memset(&buf, 0, sizeof(buf));
-                ssize_t recv_nbytes = recv(sockfd, buf, BUFSIZ - 1 , 0);
-                if(recv_nbytes == 0){
-                    printf("server closed \n");
-                    close(epfd);
-                    close(sockfd);
-                    exit(1);
+                message_recv_state * state = &peer->state;
+                if(state->header_received != HEADER_SIZE){
+                    ssize_t n = recv(fd, state->header_buf+state->header_received, HEADER_SIZE-state->header_received, 0);
+                    if(n <= 0){
+                        if(n == 0){
+                            printf("server closed \n");
+                            
+                        }else{
+                            perror("recv fail");
+                        }
+                        free(peer);
+                        close(epfd);
+                        close(sockfd);
+                        exit(1);
+                    }
+                    state->header_received+=(size_t)n;
+                    if(state->header_received == HEADER_SIZE){
+                        uint32_t net_type;
+                        uint32_t net_len;
+                        memcpy(&net_type, state->header_buf, 4);
+                        memcpy(&net_len, state->header_buf+4, 4);
+                        state->header.type = ntohl(net_type);
+                        state->header.body_len = ntohl(net_len);
+                        if(state->header.body_len == 0){
+                            printf("empty message \n");
+                            state->header_received = 0;
+                            state->body_received = 0;
+                        }
+                    }
+                }else{
+                    uint32_t body_len = state->header.body_len;
+                    ssize_t nbytes = recv(fd, state->body_buf+state->body_received, body_len-state->body_received, 0);
+                    if(nbytes <=0){
+                        // to do : error
+                        if(nbytes == 0){
+                            perror("server closed");
+                        }else{
+                            perror("recv fail");
+                        }
+                        free(peer);
+                        close(epfd);
+                        close(sockfd);
+                        exit(1);
+                    }else{
+                        state->body_buf[body_len] = '\0';
+                        
+                        state->body_received += (size_t)nbytes;
+                        if(state->body_received > body_len){
+                            // error
+                        }else if(state->body_received == body_len){
+                            printf("recv server echo: %s\n", state->body_buf);
+                            memset(state, 0, sizeof(*state));
+                        }
+                    }
                 }
-                if(recv_nbytes == -1){
-                    perror("recv fail");
-                    close(epfd);
-                    close(sockfd);
-                    exit(1);
-                }
-                buf[recv_nbytes] = '\0';
-                printf("receive message: %s \n", buf);
             }else{
                 close(epfd);
                 close(sockfd);

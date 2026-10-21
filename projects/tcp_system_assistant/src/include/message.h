@@ -24,6 +24,12 @@ typedef struct {
     size_t body_received;
 } message_recv_state;
 
+typedef struct {
+    int fd;
+    struct sockaddr_in addr;
+    message_recv_state state;
+}connection;
+
 ssize_t send_msg(int fd, message_header header, const char * message);
 
 #endif
