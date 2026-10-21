@@ -31,5 +31,6 @@ typedef struct {
 }connection;
 
 ssize_t send_msg(int fd, message_header header, const char * message);
+ssize_t recv_msg(connection* peer);
 
 #endif

@@ -112,60 +112,16 @@ int main(){
                 }
                 printf("send success \n");
             }else if(fd == sockfd){
-                message_recv_state * state = &peer->state;
-                if(state->header_received != HEADER_SIZE){
-                    ssize_t n = recv(fd, state->header_buf+state->header_received, HEADER_SIZE-state->header_received, 0);
-                    if(n <= 0){
-                        if(n == 0){
-                            printf("server closed \n");
-                            
-                        }else{
-                            perror("recv fail");
-                        }
-                        free(peer);
-                        close(epfd);
-                        close(sockfd);
-                        exit(1);
-                    }
-                    state->header_received+=(size_t)n;
-                    if(state->header_received == HEADER_SIZE){
-                        uint32_t net_type;
-                        uint32_t net_len;
-                        memcpy(&net_type, state->header_buf, 4);
-                        memcpy(&net_len, state->header_buf+4, 4);
-                        state->header.type = ntohl(net_type);
-                        state->header.body_len = ntohl(net_len);
-                        if(state->header.body_len == 0){
-                            printf("empty message \n");
-                            state->header_received = 0;
-                            state->body_received = 0;
-                        }
-                    }
-                }else{
-                    uint32_t body_len = state->header.body_len;
-                    ssize_t nbytes = recv(fd, state->body_buf+state->body_received, body_len-state->body_received, 0);
-                    if(nbytes <=0){
-                        // to do : error
-                        if(nbytes == 0){
-                            perror("server closed");
-                        }else{
-                            perror("recv fail");
-                        }
-                        free(peer);
-                        close(epfd);
-                        close(sockfd);
-                        exit(1);
-                    }else{
-                        state->body_buf[body_len] = '\0';
-                        
-                        state->body_received += (size_t)nbytes;
-                        if(state->body_received > body_len){
-                            // error
-                        }else if(state->body_received == body_len){
-                            printf("recv server echo: %s\n", state->body_buf);
-                            memset(state, 0, sizeof(*state));
-                        }
-                    }
+                ssize_t nbytes = recv_msg(ptr);
+                // nbytes == 0时, 消息体未接收完成.
+                if(nbytes < 0){
+                    free(ptr);
+                    close(epfd);
+                    close(sockfd);
+                    exit(1);
+                }else if(nbytes > 0){
+                    printf("recv server echo: %s\n", ptr->state.body_buf);
+                    memset(&(ptr->state), 0, sizeof(ptr->state));
                 }
             }else{
                 close(epfd);
