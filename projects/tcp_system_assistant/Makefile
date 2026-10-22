@@ -1,6 +1,5 @@
 CC = gcc
 CPPFLAGS = -I src/include
-CFLAGS = -Wall -Wextra -Wpedantic -g
 
 BUILD = build
 
@@ -14,13 +13,13 @@ build/client: build/client.o build/message.o
 	@gcc $^ -o $@
 
 build/server.o: src/server.c src/include/message.h 
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) -c $< -o $@
 
 build/client.o: src/client.c src/include/message.h 
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) -c $< -o $@
 
 build/message.o: src/lib/message.c src/include/message.h 
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(BUILD)/server $(BUILD)/client \
