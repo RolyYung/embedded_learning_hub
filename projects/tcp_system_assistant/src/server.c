@@ -143,10 +143,18 @@ int main(){
                 else if(nbytes > 0){
                     // ----接收数据完成.
                     message_recv_state * state = &(peer->state);
-                    send_msg(fd, state->header, state->body_buf);
+                    ssize_t nbytes_send = send_msg(fd, state->header, state->body_buf);
+
+                    if(-1 == nbytes_send){
+                        perror("send fail");
+                        free(peer);
+                        close(epfd);
+                        close(listenfd);
+                        exit(1);
+                    }
 
                     char ip[20];
-                    inet_ntop(AF_INET, &(peer->addr.sin_addr), ip, sizeof(peer->addr.sin_addr));
+                    inet_ntop(AF_INET, &(peer->addr.sin_addr), ip, sizeof(ip));
                     printf("====client[%s:%d], send message==== \n\n", ip, ntohs(peer->addr.sin_port));
                     printf("message type: %d, message length: %d \n", state->header.type, state->header.body_len);
                     printf("message content: %s \n", state->body_buf);
