@@ -14,6 +14,8 @@ public:
 
     static MyString ToNumber(int number);
 
+    void Reverse();
+
     void Show();
 };
 

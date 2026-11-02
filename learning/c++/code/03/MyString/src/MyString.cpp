@@ -38,48 +38,33 @@ void MyString::Show(){
 }
 
 MyString MyString::ToNumber(int number){
-    if(number > 0){
-        int length = 1;
-        int num = 10;
-        while (number >= num)
-        {
-            num *= 10;
-            length++;
-        }
-        // 定义承接字符串
-        char* buf = new char[length+1]{0};
-        for (int i = length-1; i >= 0; i--)
-        {
-            buf[i] = '0' + number % 10;
-            number /= 10;
-        }
-        buf[length] = '\0';
-        MyString str{buf};
-        delete []buf;
-        return str;
-    }else if(number < 0){
-        int _number = -(number);
-        int length = 1;
-        int num = 10;
-        while (_number >= num)
-        {
-            num *= 10;
-            length++;
-        }
-        // 定义承接字符串
-        char* buf = new char[length+2]{0};
-        for (int i = length; i >= 1; i--)
-        {
-            buf[i] = '0' + _number % 10;
-            _number /= 10;
-        }
-        buf[length+1] = '\0';
-        buf[0] = '-';
-        MyString str{buf};
-        delete []buf;
-        return str;
-    }else{
-        MyString str{"0"};
-        return str;
+    bool isNeg = number < 0;
+    if(isNeg){
+        number = -number;
     }
+    char buf[15]{0};
+    int i = 0;
+    do{
+        buf[i] = number % 10 + '0';
+        number /= 10;
+        i++;
+    }while(number > 0);
+    if(isNeg){
+        buf[i++] = '-';
+    }
+    MyString str{buf};
+    str.Reverse();
+    
+    return str;
+}
+
+void MyString::Reverse(){
+    int length = strlen(this->m_data);
+    for (int i = 0; i < length / 2; i++)
+    {
+        char temp = this->m_data[i];
+        this->m_data[i] = this->m_data[length - 1 - i];
+        this->m_data[length - 1 - i] = temp;
+    }
+    
 }
