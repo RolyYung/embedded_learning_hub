@@ -8,6 +8,12 @@ Point::Point(int x, int y){
     m_y = y;
 }
 
+Point::Point(const Point &other){
+    cout << "copy Point" << endl;
+    m_x = other.m_x;
+    m_y = other.m_y;
+}
+
 void Point::SetX(int x){
     m_x = x;
     return;
