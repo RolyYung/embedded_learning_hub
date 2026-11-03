@@ -35,3 +35,10 @@ int Point::GetY(){
 void Point::Show(){
     cout << GetX() << " " << GetY() << endl;
 }
+
+const Point Point::operator+(const Point &other) const
+{
+    int x = this->m_x + other.m_x;
+    int y = this->m_y + other.m_y;
+    return Point(x, y);
+}

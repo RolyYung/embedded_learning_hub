@@ -5,6 +5,8 @@ class Point{
 public:
     Point(int x, int y);
     Point(const Point &other);
+
+    const Point operator+(const Point &other) const;
     void SetX(int x);
     int GetX();
 
