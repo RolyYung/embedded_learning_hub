@@ -42,3 +42,16 @@ const Point Point::operator+(const Point &other) const
     int y = this->m_y + other.m_y;
     return Point(x, y);
 }
+
+Point &Point::operator++(){
+    ++m_x;
+    ++m_y;
+    return *this;
+}
+
+const Point Point::operator++(int){
+    Point temp(*this);
+    ++m_x;
+    ++m_y;
+    return temp;
+}

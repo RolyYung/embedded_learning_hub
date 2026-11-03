@@ -9,6 +9,11 @@ using namespace std;
 //     return p;
 // }
 
+ostream & operator<<(ostream &out, Point &p){
+    out << "( " << p.m_x << " , " << p.m_y << " )"; 
+    return out;
+}
+
 int main(int argc, char *argv[])
 {
     Point p{10,20};
@@ -18,7 +23,12 @@ int main(int argc, char *argv[])
     Point p3{0,0};
     p3 = p + p2;
     p3.Show();
+    p3 = p2++;
+    p3.Show();
+    ++p3;
+    p3.Show();
     
+    cout << p3 << endl;
     // Circle c{30, 20, 10};
 
     // cout << c.pointAndCircle(p) << endl;
