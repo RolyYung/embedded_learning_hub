@@ -17,6 +17,12 @@ public:
     void Reverse();
 
     void Show();
+
+    const MyString operator+(const MyString &other) const;
+
+    MyString & operator=(const MyString &other);
+
+    bool operator==(MyString &other);
 };
 
 

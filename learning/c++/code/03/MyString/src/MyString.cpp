@@ -68,3 +68,30 @@ void MyString::Reverse(){
     }
     
 }
+
+const MyString MyString::operator+(const MyString &other) const
+{
+    int length = strlen(this->m_data) + strlen(other.m_data) + 1;
+    char buf[length]{0};
+
+    strcat(buf, this->m_data);
+    strcat(buf, other.m_data);
+
+    return MyString(buf);
+}
+
+MyString& MyString::operator=(const MyString &other)
+{
+    // 给的是原值就原封不动
+    if(other.m_data == m_data){
+        return *this;
+    }
+    delete []m_data;
+    m_data = new char[strlen(other.m_data) + 1]{0};
+    strcpy(m_data, other.m_data);
+    return *this;
+}
+
+bool MyString::operator==(MyString &other){
+    return strcmp(m_data, other.m_data) == 0;
+}
