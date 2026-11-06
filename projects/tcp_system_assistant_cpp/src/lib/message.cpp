@@ -42,7 +42,7 @@ ssize_t send_msg(int fd, message_header header, const char * message){
 
 ssize_t recv_msg(connection* peer){
     int fd = peer->fd;
-    message_recv_state & state = (peer->state);
+    auto & state = (peer->state);
     if(state.header_received != HEADER_SIZE){
         // 获取完整头部信息
         ssize_t n = recv(fd, state.header_buf+state.header_received, HEADER_SIZE-state.header_received, 0);
