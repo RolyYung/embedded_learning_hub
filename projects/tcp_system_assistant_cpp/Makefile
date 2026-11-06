@@ -1,8 +1,9 @@
 CC = gcc
 CXX = g++
 CPPFLAGS = -I src/include
+CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic
 
-BUILD = build
+BUILD = build 
 
 .PHONY: all clean
 
@@ -14,13 +15,13 @@ build/client: build/client.o build/message.o
 	@$(CXX) $^ -o $@
 
 build/server.o: src/server.c src/include/message.h 
-	$(CC) $(CPPFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) -c $< -o $@
 
 build/client.o: src/client.c src/include/message.h 
-	$(CC) $(CPPFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) -c $< -o $@
 
 build/message.o: src/lib/message.cpp src/include/message.h 
-	$(CXX) $(CPPFLAGS) -std=c++17 -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(BUILD)/server $(BUILD)/client \

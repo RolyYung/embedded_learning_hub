@@ -19,14 +19,14 @@ ssize_t send_msg(int fd, message_header header, const char * message){
 
     uint32_t net_type = htonl(header.type);
     uint32_t net_len = htonl(len);
-    unsigned char msg_buf[BUFSIZ + 8];
+    unsigned char msg_buf[BUFSIZ + HEADER_SIZE];
     memcpy(msg_buf,     &net_type, 4);
     memcpy(msg_buf + 4, &net_len,  4);
     if (len > 0) {
-        memcpy(msg_buf + 8, message, len);
+        memcpy(msg_buf + HEADER_SIZE, message, len);
     }
 
-    size_t total = 8 + len;
+    size_t total = HEADER_SIZE + len;
     size_t sent = 0;
     while (sent < total) {
         ssize_t n = send(fd, msg_buf + sent, total - sent, 0);
