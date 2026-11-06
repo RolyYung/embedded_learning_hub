@@ -90,7 +90,7 @@ int main(){
         
         for (int i = 0; i < ready_num; i++)
         {
-            connection *ptr = e_events[i].data.ptr;
+            connection *ptr = (connection *)e_events[i].data.ptr;
             int fd = ptr->fd;
             if(fd == STDIN_FILENO){
                 if(NULL == fgets(buf, BUFSIZ, stdin)){

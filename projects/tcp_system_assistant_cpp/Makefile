@@ -1,7 +1,7 @@
 CC = gcc
 CXX = g++
 CPPFLAGS = -I src/include
-CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic
+CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -I src/include
 
 BUILD = build 
 
@@ -14,10 +14,10 @@ build/server: build/server.o build/message.o
 build/client: build/client.o build/message.o
 	@$(CXX) $^ -o $@
 
-build/server.o: src/server.c src/include/message.h 
+build/server.o: src/server.cpp src/include/message.h 
 	$(CXX) $(CPPFLAGS) -c $< -o $@
 
-build/client.o: src/client.c src/include/message.h 
+build/client.o: src/client.cpp src/include/message.h 
 	$(CXX) $(CPPFLAGS) -c $< -o $@
 
 build/message.o: src/lib/message.cpp src/include/message.h 
