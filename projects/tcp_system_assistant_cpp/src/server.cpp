@@ -10,6 +10,7 @@
 #include <sys/epoll.h>
 #include "message.h"
 #include <unordered_map>
+#include "socket_guard.hpp"
 
 #define ERR_VAL -1
 #define PORT 8888
@@ -18,22 +19,6 @@
 
 using namespace std;
 
-class SocketGuard
-{
-	public:
-		SocketGuard(int fd) : m_fd(fd)
-		{}
-
-        SocketGuard(const SocketGuard &other) = delete;
-        SocketGuard& operator&(const SocketGuard &other) = delete;
-
-		~SocketGuard()
-		{
-			close(m_fd);
-		}
-	private:
-		int m_fd;	
-};
 
 int main(){
     // ----初始化

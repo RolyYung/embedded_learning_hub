@@ -14,10 +14,10 @@ build/server: build/server.o build/message.o
 build/client: build/client.o build/message.o
 	@$(CXX) $^ -o $@
 
-build/server.o: src/server.cpp src/include/message.h 
+build/server.o: src/server.cpp src/include/message.h src/include/socket_guard.hpp
 	$(CXX) $(CPPFLAGS) -c $< -o $@
 
-build/client.o: src/client.cpp src/include/message.h 
+build/client.o: src/client.cpp src/include/message.h src/include/socket_guard.hpp
 	$(CXX) $(CPPFLAGS) -c $< -o $@
 
 build/message.o: src/lib/message.cpp src/include/message.h 
