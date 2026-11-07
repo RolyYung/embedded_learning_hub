@@ -18,6 +18,20 @@
 
 using namespace std;
 
+class SocketGuard
+{
+	public:
+		SocketGuard(int fd) : m_fd(fd)
+		{}
+
+		~SocketGuard()
+		{
+			close(m_fd);
+		}
+	private:
+		int m_fd;	
+};
+
 int main(){
     // ----初始化
     signal(SIGPIPE, SIG_IGN);
@@ -35,25 +49,24 @@ int main(){
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
     inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr);
-
+	
+	SocketGuard listener{listenfd};
     if(-1 == bind(listenfd, (struct sockaddr*)&server_addr, sizeof(server_addr))){
         perror("bind fail");
-        close(listenfd);
-        return -1;
+        return 1;
     }
 
     if(-1 == listen(listenfd, 5)){
         perror("listen fail");
-        close(listenfd);
-        return -1;
+        return 1;
     }
 
     int epfd = epoll_create1(0);
     if(epfd == -1){
         perror("epoll create1");
-        close(listenfd);
-        exit(1);
+        return 1;
     }
+    SocketGuard ep_listener{epfd};
 
     struct epoll_event ev;
     unordered_map<int, connection> clients;
@@ -66,9 +79,7 @@ int main(){
     int ret = epoll_ctl(epfd, EPOLL_CTL_ADD, listenfd, &ev);
     if(ret == -1){
         perror("epoll_ctl add");
-        close(listenfd);
-        close(epfd);
-        exit(1);
+        return 1;
     }
     // ----初始化结束.
 
@@ -78,9 +89,7 @@ int main(){
         int ready_num = epoll_wait(epfd, e_events, MAX_EVENTS, -1);
         if(ready_num == -1){
             perror("epoll_wait");
-            close(epfd);
-            close(listenfd);
-            exit(1);
+            return 1;
         }
         for(int i=0;i<ready_num;i++){
             auto& peer = clients.at(e_events[i].data.fd);
@@ -140,9 +149,7 @@ int main(){
 
                     if(-1 == nbytes_send){
                         perror("send fail");
-                        close(epfd);
-                        close(listenfd);
-                        exit(1);
+                        return 1;
                     }
 
                     char ip[20];
@@ -157,8 +164,6 @@ int main(){
             }
         }
     }
-    close(epfd);
-    close(listenfd);
     
     return 0;
 }
