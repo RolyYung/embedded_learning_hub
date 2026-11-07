@@ -10,6 +10,9 @@
 #include <sys/epoll.h>
 #include "message.h"
 #include "socket_guard.hpp"
+#include <iostream>
+
+using namespace std;
 
 #define PORT 8888
 #define SERVERIP "192.168.44.100"
@@ -44,15 +47,9 @@ int main(){
     
     struct epoll_event e_events[2];
 
-    connection * in_peer = (connection *)malloc(sizeof(connection));
-    if(in_peer == NULL){
-        printf("in_peer malloc fail \n");
-        
-        return 1;
-    }
-    memset(in_peer, 0, sizeof(connection));
-    in_peer->fd = STDIN_FILENO;
-    e_events[0].data.ptr = in_peer;
+    connection in_peer{};
+    in_peer.fd = STDIN_FILENO;
+    e_events[0].data.ptr = &in_peer;
     e_events[0].events = EPOLLIN;
     if(-1 == epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &e_events[0])){
         perror("epoll_ctl add");
@@ -60,17 +57,10 @@ int main(){
         return 1;
     }
 
-    connection * peer = (connection *)malloc(sizeof(connection));
-    if(peer == NULL){
-        printf("malloc fail \n");
-        
-        return 1;
-    }
+    connection peer{};
+    peer.fd = sockfd;
 
-    memset(peer, 0, sizeof(connection));
-    peer->fd = sockfd;
-
-    e_events[1].data.ptr = peer;
+    e_events[1].data.ptr = &peer;
     e_events[1].events = EPOLLIN;
     if(-1 == epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &e_events[1])){
         perror("epoll_ctl add");
@@ -78,6 +68,7 @@ int main(){
         return 1;
     }
     char buf[BUFSIZ];
+    string line;
     while(1){
         int ready_num = epoll_wait(epfd, e_events, 2, -1);
         if(ready_num == -1){
@@ -90,15 +81,16 @@ int main(){
             connection *ptr = (connection *)e_events[i].data.ptr;
             int fd = ptr->fd;
             if(fd == STDIN_FILENO){
-                if(NULL == fgets(buf, BUFSIZ, stdin)){
+                if(!getline(cin, line)){
                     return 1;
                 }
+                line += '\n';
                 message_header header;
                 header.type = 1;
-                header.body_len = strlen(buf);
+                header.body_len = line.size();
 
 
-                ssize_t nbytes = send_msg(sockfd, header, buf);
+                ssize_t nbytes = send_msg(sockfd, header, line.c_str());
                 if(-1 == nbytes){
                     perror("send fail");
                     return 1;
@@ -108,7 +100,6 @@ int main(){
                 ssize_t nbytes = recv_msg(ptr);
                 // nbytes == 0时, 消息体未接收完成.
                 if(nbytes < 0){
-                    free(ptr);
                     return 1;
                 }else if(nbytes > 0){
                     printf("recv server echo: %s\n", ptr->state.body_buf);
