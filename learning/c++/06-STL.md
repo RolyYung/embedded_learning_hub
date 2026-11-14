@@ -15,3 +15,6 @@ struct 和 class 几乎完全一样, 只是默认的访问域不一样.
 `weak_ptr<P> p(new P{1}`
 `weak_ptr<P> p = make_shared<P>(P{1})`
 `weak_ptr<P> p = shared_ptr<P>(new P{1})`
+
+# lambda
+***
